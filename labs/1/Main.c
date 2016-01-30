@@ -1,10 +1,10 @@
 #include "Main.h"
 
 int main(int argc, char **argv, char *envp[]) {
-    char* usage = "Usage %s [-u] [-g] [-n <num-integers>] [-m <min-int>] [-M <max-int>] [-s <seed>]\n[-i <input-file-name>] [-o <output-file-name>] [-c <count-file-name>]\n";
+    char* usage = "Usage: %s [-u] [-g] [-n <num-integers>] [-m <min-int>] [-M <max-int>] [-s <seed>]\n[-i <input-file-name>] [-o <output-file-name>] [-c <count-file-name>]\n";
     char* optstring = "ugn:m:M:s:i:o:c:";
     optionstruct init = {
-        0, 0, 0, 0, 0, "", "", ""
+        0, 0, 1, 1000000, 0, "", "", ""
     };
     for(int i=1;i<argc;i++) {
         //printf("%s\n", argv[i]);
@@ -41,7 +41,7 @@ int main(int argc, char **argv, char *envp[]) {
                 break;
             case 's':
                 if(DEBUG) printf("s: %s\n", optarg);
-                parameters.seed = atoi(optarg);
+                parameters.seed = strtoul(optarg, NULL, 10);
                 break;
             case 'i':
                 if(DEBUG) printf("i: %s\n", optarg);
@@ -56,7 +56,8 @@ int main(int argc, char **argv, char *envp[]) {
                 parameters.countfile = optarg;
                 break;
             default:
-                printf(usage, argv[0]);
+                fprintf(stderr, usage, argv[0]);
+                exit(1);
                 break;
         }
     }
