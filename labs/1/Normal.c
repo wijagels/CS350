@@ -5,13 +5,13 @@
  * where n is from -n
  * and u is length of userid
  */
-void sorted(optionstruct opts) {
+void sorted(optionstruct opts, FILE* istream, FILE* ostream, FILE* countstream) {
     char* user = getenv("USER");
     int userlen = strlen(user); //used many times, so worth keeping it
     int* userval = (int*) malloc(sizeof(int) * strlen(user));
     int* nums = (int*) malloc(sizeof(int) * opts.num);
     if(!userval) {
-        perror("Malloc failed: ");
+        perror("malloc failed: ");
         exit(1);
     }
     // Runtime u where u is length of userid
@@ -27,7 +27,7 @@ void sorted(optionstruct opts) {
      * stupidly large number for -n.
      */
     for(int n = 0;n < opts.num;n++) {
-        int integer = readint(opts.max, stdin);
+        int integer = readint(opts.max, istream);
         nums[n] = integer;
         for(int i=0;i < userlen;i++) {
             if(user[i] == integer)
@@ -43,11 +43,11 @@ void sorted(optionstruct opts) {
     }
     qsort(&nums[0], sz, sizeof(int), incompare);
     for(int i=0;i < sz;i++) {
-        printf("%d\n", nums[i]);
+        fprintf(ostream, "%d\n", nums[i]);
     }
     // Runtime u where u is length of userid
     for(int i=0;i < userlen;i++) {
-        printf("%c\t%d\t%d\n", user[i], (int)user[i], userval[i]);
+        fprintf(countstream, "%c\t%d\t%d\n", user[i], (int)user[i], userval[i]);
     }
     free(userval);
     free(nums);
@@ -58,7 +58,7 @@ void sorted(optionstruct opts) {
  * Loosely based on:
  * http://stackoverflow.com/a/4023921/1666415
  */
-int readint(int max, FILE* stream) {
+int readint(int max, FILE* istream) {
     int num;
     // Intelligently determine the upper bound on digits
     char str[15];
@@ -67,7 +67,7 @@ int readint(int max, FILE* stream) {
     char input[size];
     for(int i=0;i<size;i++)
         input[i] = '\0';
-    fgets(input, size, stream);
+    fgets(input, size, istream);
     size_t inputlen = strlen(input);
     // Case where there are no more ints being passed in
     if(inputlen <= 1)

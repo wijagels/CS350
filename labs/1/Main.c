@@ -4,7 +4,7 @@ int main(int argc, char **argv, char *envp[]) {
     char* usage = "Usage: %s [-u] [-g] [-n <num-integers>] [-m <min-int>] [-M <max-int>] [-s <seed>]\n[-i <input-file-name>] [-o <output-file-name>] [-c <count-file-name>]\n";
     char* optstring = "ugn:m:M:s:i:o:c:";
     optionstruct init = {
-        0, 0, 1, 1000000, 0, "", "", ""
+        0, 100, 1, 1000000, 0, "", "", ""
     };
     for(int i=1;i<argc;i++) {
         //printf("%s\n", argv[i]);
@@ -65,7 +65,31 @@ int main(int argc, char **argv, char *envp[]) {
         generate(parameters);
     }
     else {
-        sorted(parameters);
+        FILE* ostream = stdout;
+        FILE* istream = stdin;
+        FILE* countstream = stdout;
+        if(strlen(parameters.output) > 1) {
+            ostream = fopen(parameters.output, "w");
+            if(!ostream) {
+                perror("fopen failed");
+                exit(1);
+            }
+        }
+        if(strlen(parameters.input) > 1) {
+            istream = fopen(parameters.input, "r");
+            if(!istream) {
+                perror("fopen failed");
+                exit(1);
+            }
+        }
+        if(strlen(parameters.countfile) > 1) {
+            countstream = fopen(parameters.countfile, "w");
+            if(!countstream) {
+                perror("fopen failed");
+                exit(1);
+            }
+        }
+        sorted(parameters, istream, ostream, countstream);
     }
 }
 
