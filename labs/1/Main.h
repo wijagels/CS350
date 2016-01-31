@@ -5,9 +5,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <getopt.h>
+#include <linux/perf_event.h>
+#include <linux/hw_breakpoint.h>
 
 #include "Normal.h"
 #include "Generate.h"
+#include "mytimer.h"
 
 int main(int argc, char **argv, char *envp[]);
 

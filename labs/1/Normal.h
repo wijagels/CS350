@@ -1,7 +1,8 @@
 #pragma once
+#include <errno.h>
+
 #include "Main.h"
 
 typedef struct options optionstruct;
 void sorted(optionstruct, FILE*, FILE*, FILE*);
-int readint(int, FILE*);
-inline static int incompare(const void* first, const void* second);
+int readint(int, int, FILE*);

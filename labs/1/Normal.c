@@ -1,6 +1,18 @@
 #include "Normal.h"
 
 /*
+ * qsort comparison function
+ */
+inline static int incompare(const void* first, const void* second) {
+    return *(int*)first - *(int*)second;
+    // return (*(int*)first < *(int*)second) ? -1 : (*(int*)first > *(int*)second);
+    // return (*(int*)first > *(int*)second) - (*(int*)first < *(int*)second);
+    /*
+     * http://stackoverflow.com/questions/10996418/efficient-integer-compare-function
+     */
+}
+
+/*
  * Total runtime n*u + 2u
  * where n is from -n
  * and u is length of userid
@@ -10,8 +22,8 @@ void sorted(optionstruct opts, FILE* istream, FILE* ostream, FILE* countstream) 
     int userlen = strlen(user); //used many times, so worth keeping it
     int* userval = (int*) malloc(sizeof(int) * strlen(user));
     int* nums = (int*) malloc(sizeof(int) * opts.num);
-    if(!userval) {
-        perror("malloc failed: ");
+    if(!userval || !nums) {
+        perror("malloc failed");
         exit(1);
     }
     // Runtime u where u is length of userid
@@ -27,7 +39,7 @@ void sorted(optionstruct opts, FILE* istream, FILE* ostream, FILE* countstream) 
      * stupidly large number for -n.
      */
     for(int n = 0;n < opts.num;n++) {
-        int integer = readint(opts.max, istream);
+        int integer = readint(opts.max, opts.min, istream);
         nums[n] = integer;
         for(int i=0;i < userlen;i++) {
             if(user[i] == integer)
@@ -58,16 +70,20 @@ void sorted(optionstruct opts, FILE* istream, FILE* ostream, FILE* countstream) 
  * Loosely based on:
  * http://stackoverflow.com/a/4023921/1666415
  */
-int readint(int max, FILE* istream) {
+int readint(int max, int min, FILE* istream) {
     int num;
-    // Intelligently determine the upper bound on digits
-    char str[15];
-    sprintf(str, "%d", max);
-    size_t size = strlen(str)+1;
-    char input[size];
-    for(int i=0;i<size;i++)
-        input[i] = '\0';
-    fgets(input, size, istream);
+    char input[15];
+
+    // for(int i=0;i<15;i++)
+    //     input[i] = '\0';
+    memset(&input, 0, sizeof(char) * 15);
+
+    if(!fgets(input, 15, istream)) {
+        if(errno) {
+            perror("fgets failed");
+            exit(1);
+        }
+    }
     size_t inputlen = strlen(input);
     // Case where there are no more ints being passed in
     if(inputlen <= 1)
@@ -79,12 +95,10 @@ int readint(int max, FILE* istream) {
     // Trim the newline
     input[inputlen-1] = '\0';
     num = atoi(input);
+    if(num > max || num < min) {
+        fprintf(stderr, "%d is out of bounds, must be within [%d,%d]\n", num, min, max);
+        exit(1);
+    }
     return num;
 }
 
-/*
- * qsort comparison function
- */
-inline static int incompare(const void* first, const void* second) {
-    return *(int*)first - *(int*)second;
-}
