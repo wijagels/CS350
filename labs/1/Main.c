@@ -87,6 +87,7 @@ int main(int argc, char **argv, char *envp[]) {
             }
         }
         generate(parameters, ostream);
+        fclose(ostream);
     }
     else {
         FILE* ostream = stdout;
@@ -115,7 +116,11 @@ int main(int argc, char **argv, char *envp[]) {
         }
         settimer();
         sorted(parameters, istream, ostream, countstream);
-        fprintf(stderr, "%f\n", (float)endtimer()/1000000);
+        fprintf(stderr, "Elapsed time: %f sec\n", (float)endtimer()/1000000);
+        fclose(istream);
+        fclose(ostream);
+        fclose(countstream);
     }
+    return 0;
 }
 

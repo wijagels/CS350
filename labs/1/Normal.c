@@ -12,11 +12,6 @@ inline static int incompare(const void* first, const void* second) {
      */
 }
 
-/*
- * Total runtime n*u + 2u
- * where n is from -n
- * and u is length of userid
- */
 void sorted(optionstruct opts, FILE* istream, FILE* ostream, FILE* countstream) {
     char* user = getenv("USER");
     int userlen = strlen(user); //used many times, so worth keeping it
@@ -54,6 +49,7 @@ void sorted(optionstruct opts, FILE* istream, FILE* ostream, FILE* countstream) 
         }
     }
     qsort(&nums[0], sz, sizeof(int), incompare);
+    // Runtime n where n is number of elements in nums
     for(int i=0;i < sz;i++) {
         fprintf(ostream, "%d\n", nums[i]);
     }
@@ -67,7 +63,7 @@ void sorted(optionstruct opts, FILE* istream, FILE* ostream, FILE* countstream) 
 
 /*
  * Helper function to read an integer from a stream
- * Loosely based on:
+ * Based on:
  * http://stackoverflow.com/a/4023921/1666415
  */
 int readint(int max, int min, FILE* istream) {
