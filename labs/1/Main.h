@@ -1,21 +1,16 @@
 #pragma once
 #define DEBUG 0
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <getopt.h>
-#include <linux/perf_event.h>
 
 #include "Normal.h"
 #include "Generate.h"
 #include "mytimer.h"
 
-int main(int argc, char **argv, char *envp[]);
+int main(int argc, char **argv);
 
 
 struct options {
     char g; //treated as a boolean
+    char nd; //num defined
     int num;
     int min;
     int max;

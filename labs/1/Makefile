@@ -1,11 +1,11 @@
 CC=gcc
-CFLAGS=-c -g -O3 -Wall -std=c11
+CFLAGS=-c -g -O3 -Wall -std=c11 -lrt
 LDFLAGS=
 SOURCES=Main.c Generate.c Normal.c mytimer.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=lab1
 RUN=./$(EXECUTABLE)
-RUNV=valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all $(RUN)
+RUNV=valgrind --leak-check=full --track-origins=yes $(RUN)
 RUNS=perf stat $(RUN)
 
 ccred:=$(shell echo "\033[0;31m")
@@ -27,7 +27,7 @@ clean:
 
 test: all
 	@echo "$(ccgreen)Running basic test$(ccend)"
-	echo "130\n131\n119\n108" | $(RUN) -n 4
+	echo "4\n130\n131\n119\n108" | $(RUN) -n 4
 	@echo "$(ccgreen)Running file test$(ccend)"
 	-rm out.txt outcount.txt
 	$(RUN) -i in.txt -M 1000 -o out.txt -c outcount.txt
@@ -44,4 +44,4 @@ test: all
 	@echo "$(ccgreen)Running input pipe test$(ccend)"
 	cat myfile.txt | $(RUN)
 	@echo "$(ccgreen)Running performance test with 100,000 random numbers$(ccend)"
-	$(RUN) -g -n 100000 -M 100000 | $(RUNS) -n 100000 -M 100000 -o /dev/null -c /dev/null
+	$(RUN) -g -n 100000 -M 100000 | $(RUNV) -n 100000 -M 100000 -o /dev/null -c /dev/null

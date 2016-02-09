@@ -1,11 +1,17 @@
 #include "Main.h"
 
-int main(int argc, char **argv, char *envp[]) {
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <getopt.h>
+
+int main(int argc, char **argv) {
     const char* usage = "Usage: %s [-u] [-g] [-n <num-integers>] [-m <min-int>] [-M <max-int>] [-s <seed>]\n[-i <input-file-name>] [-o <output-file-name>] [-c <count-file-name>]\n";
     const char* optstring = "ugn:m:M:s:i:o:c:";
     // Set the defaults
     optionstruct parameters = {
-        0, 100, 1, 255, 0, "", "", ""
+        0, 0, 100, 1, 255, 0, "", "", ""
     };
     char opt;
     /*
@@ -27,6 +33,7 @@ int main(int argc, char **argv, char *envp[]) {
                     perror("sscanf failed");
                     exit(1);
                 }
+                parameters.nd = 1;
                 break;
             case 'm':
                 if(DEBUG) fprintf(stderr, "m: %s\n", optarg);
@@ -45,6 +52,7 @@ int main(int argc, char **argv, char *envp[]) {
             case 's':
                 if(DEBUG) fprintf(stderr, "s: %s\n", optarg);
                 parameters.seed = strtoul(optarg, NULL, 10);
+                printf("%lu\n", parameters.seed);
                 break;
             case 'i':
                 if(DEBUG) fprintf(stderr, "i: %s\n", optarg);

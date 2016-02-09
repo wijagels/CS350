@@ -4,4 +4,3 @@
 
 void settimer();
 suseconds_t endtimer();
-
