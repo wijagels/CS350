@@ -22,6 +22,7 @@ int main(int argc, char **argv) {
         switch(opt) {
             case 'u':
                 printf(usage, argv[0]);
+                exit(0);
                 break;
             case 'g':
                 if(DEBUG) printf("g: enabled");
