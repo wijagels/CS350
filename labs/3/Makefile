@@ -26,4 +26,4 @@ clean:
 	-rm $(EXECUTABLE) *.o
 
 test: all
-	$(RUN) -N 4 -M 2 -s 10
+	$(RUN) 4

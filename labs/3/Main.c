@@ -9,92 +9,95 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <sys/shm.h>
-#include <sys/ipc.h>
-#include <sys/wait.h>
 #include <sys/stat.h>
 
 void signal_handler(int sig);
-char numprocs;
+int numprocs;
 
 int main(int argc, char** argv) {
+    /* Initialization */
+    signal(SIGUSR1, signal_handler);
     numprocs = atoi(argv[1]);
-    char ogprocs = numprocs;
+    if(0 > numprocs || numprocs > 32) {
+        printf("Invalid argument.  Exiting\n");
+        exit(1);
+    }
+    int ogprocs = numprocs;
     int shmid;
     key_t key;
-    pid_t *shm;
+    int *shm;
     key = 1738;
-    mknod("lab3pipe", S_IFIFO, 0);
-    shmid = shmget(key, numprocs * sizeof(pid_t), IPC_CREAT | 0666);
+    umask(0);// Needed for reasons
+    mknod("lab3pipe", S_IFIFO | 0666, 0);
+    shmid = shmget(key, numprocs * sizeof(int), IPC_CREAT | 0666);
     if(shmid < 0) {
         perror("shmget");
         exit(1);
     }
     shm = shmat(shmid, NULL, 0);
-    if(shm == (pid_t*) -1) {
+    if(shm == (int*) -1) {
         perror("shmat");
         exit(1);
     }
     memset(shm, 0, numprocs * sizeof(pid_t));
-    shm[0] = getpid();
-    numprocs--;
-    if(fork() == 0) {
+    /* End init */
+    if(numprocs == 1) {
+        // Special case, skip all the normal stuff.
         printf("ALIVE: Level %d process with pid=%d, child of ppid=%d.\n",
                 numprocs, getpid(), getppid());
-        while(numprocs > 0) {
-            int fd[2];
-            pipe(fd);
-            pid_t pid = fork();
-            pid_t me = getpid();
-            signal(SIGUSR1, signal_handler);
-            if(pid == 0) {
-                numprocs--;
-                printf("ALIVE: Level %d process with pid=%d, child of ppid=%d.\n",
-                        numprocs, getpid(), getppid());
-                close(fd[READ]);
-                write(fd[WRITE], &me, sizeof(pid_t));
-                close(fd[WRITE]);
-            }
-            else {
-                if(numprocs > 0) {
-                    shmid = shmget(key, numprocs * sizeof(pid_t), 0666);
-                    shm = shmat(shmid, NULL, 0);
-                    pid_t k;
-                    close(fd[WRITE]);
-                    read(fd[READ], &k, sizeof(pid_t));
-                    close(fd[READ]);
-                    shm[ogprocs - numprocs] = k;
-                    if(numprocs == 1) {
-                        int l3p = open("lab3pipe", O_WRONLY);
-                        char *buf = "hi";
-                        write(l3p, buf, 10);
-                        close(l3p);
-                    }
-                }
+        shmdt(shm);
+        shmctl(shmid, IPC_RMID, NULL);
+        if(remove("lab3pipe")) perror("remove");
+        kill(getpid(), SIGUSR1);
+    }
+    while(numprocs > 0) {
+        if(numprocs == ogprocs) {
+            printf("ALIVE: Level %d process with pid=%d, child of ppid=%d.\n",
+                    numprocs, getpid(), getppid());
+            shm[0] = getpid();
+        }
+        int fd[2];
+        pipe(fd);
+        int np = numprocs-1;
+        write(fd[WRITE], &np, sizeof(int));
+        close(fd[WRITE]);
+        if(fork() == 0) {
+            read(fd[READ], &numprocs, sizeof(int));
+            close(fd[READ]);
+            printf("ALIVE: Level %d process with pid=%d, child of ppid=%d.\n",
+                    numprocs, getpid(), getppid());
+            shm[ogprocs-numprocs] = getpid();
+            if(numprocs <= 1) {
+                int l3p = open("lab3pipe", O_WRONLY);
+                char *buf = "KillMePls";
+                write(l3p, buf, 10);
+                close(l3p);
                 pause();
-                exit(0);
             }
         }
-        pause();
+        else if(numprocs == ogprocs)
+            break;
+        else
+            pause();
     }
-    else {
-        //wait(NULL);
-        int l3p = open("lab3pipe", O_RDONLY);
-        char buf[10];
-        int status = read(l3p, buf, 10);
-        printf("%d - %s\n", status, buf);
-        close(l3p);
-        for(int i = 0;i <= numprocs;i++) {
-            printf("%d\n", shm[i]);
-            if(i)
-                kill(shm[i], SIGUSR1);
-        }
+    int l3p = open("lab3pipe", O_RDONLY);
+    char buf[10];
+    read(l3p, buf, 10);
+    close(l3p);
+    pid_t me = getpid();
+    for(int i = 0;i < ogprocs;i++) {
+        if(shm[i] != me)
+            kill(shm[i], SIGUSR1);
     }
+    // Cleanup
+    shmdt(shm);
+    shmctl(shmid, IPC_RMID, NULL);
+    if(remove("lab3pipe")) perror("remove");
+    signal_handler(SIGUSR1); // Kill self
 }
 
 void signal_handler(int sig) {
-	//printf("Child reached signal handler: %d, signal: %d\n", getpid(), sig);
-    printf("EXITING: Level %d process with pid=%d, child of ppid=%d.\n",
-            numprocs, getpid(), getppid());
-
+    printf("EXITING: Level %d process with pid=%d, child of ppid=%d, with signal=%d.\n",
+            numprocs, getpid(), getppid(), sig);
 	exit(0);
 }
