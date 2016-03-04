@@ -10,6 +10,7 @@
 #include <sys/types.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 
 void signal_handler(int sig);
 int numprocs;
@@ -86,18 +87,21 @@ int main(int argc, char** argv) {
     close(l3p);
     pid_t me = getpid();
     for(int i = 0;i < ogprocs;i++) {
-        if(shm[i] != me)
+        if(shm[i] != me) {
             kill(shm[i], SIGUSR1);
+            wait(NULL); // Wait to kill the n-1th process
+            while(i != 1 && kill(shm[i], 0) != -1); // Voodoo magic
+        }
     }
     // Cleanup
     shmdt(shm);
     shmctl(shmid, IPC_RMID, NULL);
     if(remove("lab3pipe")) perror("remove");
-    signal_handler(SIGUSR1); // Kill self
+    kill(getpid(), SIGUSR1); // Kill self
 }
 
 void signal_handler(int sig) {
     printf("EXITING: Level %d process with pid=%d, child of ppid=%d, with signal=%d.\n",
             numprocs, getpid(), getppid(), sig);
-	exit(0);
+    exit(0);
 }
