@@ -1,0 +1,3 @@
+[submodule "programs/program1"]
+	path = programs/program1
+	url = git@github.com:wijagels/CS350_Program1.git
