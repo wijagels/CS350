@@ -1,3 +1,6 @@
 [submodule "programs/program1"]
 	path = programs/program1
 	url = git@github.com:wijagels/CS350_Program1.git
+[submodule "programs/program2"]
+	path = programs/program2
+	url = git@github.com:wijagels/CS350_Program2.git
