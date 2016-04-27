@@ -1,7 +1,7 @@
 CC=gcc
-CFLAGS=-c -g -Wall -std=c11
-LDFLAGS=
-SOURCES=Main.c
+CFLAGS=-c -O3 -g -Wall -std=c11 -lpthread -D_XOPEN_SOURCE=700
+LDFLAGS=-lpthread
+SOURCES=Main.c Market.c Stock.c
 OBJECTS=$(SOURCES:.c=.o)
 EXECUTABLE=lab6
 RUN=./$(EXECUTABLE)
@@ -26,4 +26,4 @@ clean:
 	-rm $(EXECUTABLE) *.o
 
 test: all
-	$(RUN) 4
+	$(RUN) 55 10
